@@ -1,0 +1,43 @@
+name: Sync Drconnect upstream hourly
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/sync-upstream.yml]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-drconnect-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'kunal110284-sys/Drconnect'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the deployment branch
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Merge the latest upstream main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git remote add upstream https://github.com/Peeyush-Nanhe/Drconnect.git
+          git fetch --no-tags upstream main
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "Already synchronized with upstream main." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git merge --no-edit upstream/main
+          git push origin HEAD:main
+          echo "Upstream merged and pushed. Netlify will run checks and publish the successful build." >> "$GITHUB_STEP_SUMMARY"
