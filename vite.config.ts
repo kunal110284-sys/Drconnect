@@ -3,6 +3,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
+import { nitro } from "nitro/vite";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 import { fileURLToPath, URL } from "node:url";
 import { resolve } from "node:path";
@@ -23,6 +24,7 @@ export default defineConfig({
     tailwindcss(),
     mcp,
     tanstackStart({ server: { entry: "server" } }),
+    nitro(),
     viteReact(),
   ],
   resolve: {

@@ -18,6 +18,9 @@ dist-ssr
 .env
 .env.*
 !.env.example
+environments/*.env
+!environments/*.env.example
+environments/active
 **/supabase/.temp/
 **/supabase/.branches/
 .supabase/
@@ -44,3 +47,4 @@ android/local.properties
 *.njsproj
 *.sln
 *.sw?
+.vercel
