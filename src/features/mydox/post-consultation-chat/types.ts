@@ -1,6 +1,7 @@
 export type ChatReference =
   | { source: "care_request" | "doctor_appointment"; sourceId: string }
-  | { conversationId: string; episodeId?: string };
+  | { conversationId: string; episodeId?: string }
+  | { counterpartId: string };
 
 export type ChatRole = "patient" | "doctor";
 export type PrescriptionRequest = {

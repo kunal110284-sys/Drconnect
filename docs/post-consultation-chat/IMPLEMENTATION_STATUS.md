@@ -1,5 +1,23 @@
 # Post-consultation chat implementation status
 
+## Update 2026-09-23 — UAT live + demo chat restore (in progress)
+
+Hub Chats now open [`TwoWayChatModal`](../../src/features/mydox/TwoWayChatModal.tsx) with a real reference (`conversationId` / `counterpartId` / `doctor_appointment`). Fake `demo-*` conversation ids were removed from the inbox fallback; demo rows open via `counterpartId`.
+
+Additive migration [`20260923120000_pc_chat_uat_live_restore.sql`](../../staging/supabase/migrations/20260923120000_pc_chat_uat_live_restore.sql) restores canonical tables/RPCs after the 2026-09-12 revert, relaxes `pc_chat_enabled` / `pc_chat_doctor` for UAT patient+provider members, adds `counterpart_id` open (`uat:direct` member-pair episodes), restores real `pc_chat_inbox`, seeds demo allowlist (Priya / Dr Vikram / Rahul / Anita), and ensures the Priya↔Vikram conversation exists.
+
+Apply on UAT `pyrlvjeectjikvfksukb`:
+
+```sh
+# Set SUPABASE_ACCESS_TOKEN (or SUPABASE_DB_PASSWORD) in environments/uat.env
+npm run db:apply:uat-chat
+npm run smoke:pc-chat:uat
+```
+
+**Applied 2026-09-23** via Management API. Smoke passed for demo pair `patient1@demo.med` ↔ `medico2@demo.med` (shared `conversation_id`, bidirectional `pc_chat_send` / `pc_chat_history`, inbox rows).
+
+---
+
 Recorded 2026-09-12. **The full requested module is incomplete. Real-patient chat is disabled, and no reduced release scope has been approved.** This implementation is a gated intermediate result. It does not satisfy the founder demonstration or authorise a text-only release.
 
 ## Code, tests and deployment

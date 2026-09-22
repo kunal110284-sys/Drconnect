@@ -37,6 +37,8 @@
     "test:home-visits:staging": "node --env-file=.env scripts/test-home-visits-staging.mjs --run",
     "test:post-consultation-chat": "node --experimental-strip-types --test tests/post-consultation-chat.test.mjs tests/post-consultation-chat-db.test.mjs",
     "test:post-consultation-chat:staging": "node --env-file=.env scripts/test-post-consultation-chat-staging.mjs --run",
+    "db:apply:uat-chat": "node --env-file=environments/uat.env scripts/apply-uat-sql.mjs staging/supabase/migrations/20260923120000_pc_chat_uat_live_restore.sql",
+    "smoke:pc-chat:uat": "node --env-file=environments/uat.env scripts/smoke-pc-chat-uat.mjs",
     "seed:dummy": "node --env-file=.env scripts/manage-dummy.mjs --seed",
     "cleanup:dummy": "node --env-file=.env scripts/manage-dummy.mjs --cleanup",
     "test:emergency-flow": "node --env-file=.env scripts/test-emergency-flow.mjs --run"

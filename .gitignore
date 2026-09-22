@@ -21,6 +21,7 @@ dist-ssr
 environments/*.env
 !environments/*.env.example
 environments/active
+environments/.uat-db-password
 **/supabase/.temp/
 **/supabase/.branches/
 .supabase/

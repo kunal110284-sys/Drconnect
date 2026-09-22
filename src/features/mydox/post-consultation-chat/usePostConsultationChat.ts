@@ -437,30 +437,31 @@ async function buildFallbackInbox(uid: string | null): Promise<ChatInboxItem[]> 
     console.warn("buildFallbackInbox error:", err);
   }
 
-  // Ensure default active consultation entries so chats are never blank
+  // Demo / seed counterparts when the signed-in user has no appointment-derived rows.
+  // Open via counterpartId so pc_chat_open can create a real shared conversation.
   if (!items.some(i => i.counterpartRole === "patient")) {
     items.push({
-      conversationId: "demo-priya-sharma",
-      episodeId: "demo-ep-priya",
+      conversationId: "",
+      episodeId: "",
       counterpartId: "098ad3c8-3a77-4702-8494-ec007855e219",
       counterpartName: "Priya Sharma",
       counterpartRole: "patient",
       consultationLabel: "General Physician • MyDox Hub",
-      lastMessage: "Consultation verified & completed",
+      lastMessage: "Open to start follow-up chat",
       lastMessageAt: new Date().toISOString(),
-      unreadCount: 1,
+      unreadCount: 0,
     });
   }
 
   if (!items.some(i => i.counterpartRole === "doctor")) {
     items.push({
-      conversationId: "demo-dr-vikram",
-      episodeId: "demo-ep-vikram",
+      conversationId: "",
+      episodeId: "",
       counterpartId: "5f27622d-117e-4772-ad6d-f45ce90898fe",
       counterpartName: "Dr. Vikram Iyer",
       counterpartRole: "doctor",
-      consultationLabel: "General Physician • Video Consultation",
-      lastMessage: "Consultation verified & completed",
+      consultationLabel: "General Physician • Follow-up",
+      lastMessage: "Open to start follow-up chat",
       lastMessageAt: new Date().toISOString(),
       unreadCount: 0,
     });
@@ -487,18 +488,22 @@ export function usePostConsultationInbox() {
       busy = true;
 
       try {
-        let rows: WireSummary[] = [];
+        let rows: WireSummary[] | null = null;
+        let inboxFailed = false;
         if (captured.id) {
           try {
             rows = await chatApi.inbox();
           } catch {
-            rows = [];
+            inboxFailed = true;
+            rows = null;
           }
         }
 
         if (!alive || current.current !== captured) return;
 
-        if (rows && rows.length > 0) {
+        // Prefer RPC results when the function exists — including an intentional empty list.
+        // Fall back only when the RPC is missing/errors (stub/unavailable) so demo rows can still open via counterpartId.
+        if (!inboxFailed && Array.isArray(rows)) {
           setState({ generation: captured.generation, items: rows.map(inboxItem) });
           setError(null);
         } else {

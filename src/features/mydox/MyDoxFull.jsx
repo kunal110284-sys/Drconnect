@@ -9688,10 +9688,40 @@ function DoctorCareGroups({ onOpen }) {
 }
 
 function MedChatOverlay({ doctor, onClose }) {
+  const reference = doctor?.reference
+    || (doctor?.conversationId
+      ? { conversationId: doctor.conversationId, ...(doctor.episodeId ? { episodeId: doctor.episodeId } : {}) }
+      : null)
+    || (doctor?.counterpartId ? { counterpartId: doctor.counterpartId } : null)
+    || (doctor?.source && doctor?.sourceId ? { source: doctor.source, sourceId: doctor.sourceId } : null);
+
+  const useCanonical = Boolean(
+    reference
+    && (
+      ("conversationId" in reference && reference.conversationId)
+      || ("counterpartId" in reference && reference.counterpartId)
+      || ("source" in reference && reference.source === "doctor_appointment" && reference.sourceId)
+    )
+  );
+
+  // Consultation inbox / completed appointment threads use the canonical RPC modal.
+  // Name-only opens and unsupported care_request sources keep CalendarChat for now.
+  if (useCanonical) {
+    return (
+      <TwoWayChatModal
+        reference={reference}
+        doctorName={doctor?.name || "Consultation Chat"}
+        specialty={doctor?.spec}
+        onClose={onClose}
+      />
+    );
+  }
+
   return (
     <CalendarChat
       patientName={doctor?.name || "Consultation Chat"}
       onClose={onClose}
+      specialty={doctor?.spec}
     />
   );
 }
@@ -10416,7 +10446,13 @@ function ConsultationInboxRows({ inbox, onOpen }) {
       {error && <div role="alert" style={{ padding: "10px 13px", color: "#B91C1C", fontSize: 12 }}><p>{error}</p><button onClick={() => void refresh()} style={{ color: C.primary, cursor: "pointer", background: "none", border: `1px solid ${C.line}`, borderRadius: 8, padding: "6px 10px" }}>Retry inbox</button></div>}
       {!loading && !error && !items.length && <p style={{ padding: "10px 13px", color: C.sub, fontSize: 12 }}>No authorised consultation chats yet.</p>}
       {items.map((item, index) => (
-        <button key={`${item.conversationId}:${item.episodeId}`} onClick={() => onOpen({ name: item.counterpartName, spec: item.consultationLabel, reference: { conversationId: item.conversationId, episodeId: item.episodeId } })}
+        <button key={`${item.conversationId}:${item.episodeId}:${item.counterpartId}`} onClick={() => {
+          const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+          const reference = uuidRe.test(item.conversationId || "")
+            ? { conversationId: item.conversationId, ...(uuidRe.test(item.episodeId || "") ? { episodeId: item.episodeId } : {}) }
+            : { counterpartId: item.counterpartId };
+          onOpen({ name: item.counterpartName, spec: item.consultationLabel, counterpartId: item.counterpartId, reference });
+        }}
           style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "11px 13px", background: "none", border: "none", cursor: "pointer", textAlign: "left", borderTop: index ? `1px solid ${C.line}` : "none" }}>
           <Avatar name={item.counterpartName} size={42} />
           <div style={{ flex: 1, minWidth: 0 }}>

@@ -1,9 +1,16 @@
 import type { ChatDetails, ChatInboxItem, ChatMessage, ChatReference, WireMessage, WireSummary } from "./types.ts";
 
 export function referenceInput(reference: ChatReference): Record<string, string> {
-  return "source" in reference
-    ? { source_kind: reference.source, source_id: reference.sourceId }
-    : { conversation_id: reference.conversationId, ...(reference.episodeId ? { episode_id: reference.episodeId } : {}) };
+  if ("counterpartId" in reference) {
+    return { counterpart_id: reference.counterpartId };
+  }
+  if ("source" in reference) {
+    return { source_kind: reference.source, source_id: reference.sourceId };
+  }
+  return {
+    conversation_id: reference.conversationId,
+    ...(reference.episodeId ? { episode_id: reference.episodeId } : {}),
+  };
 }
 
 export function chatDetails(row: WireSummary): ChatDetails {
